@@ -1,0 +1,131 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: sentry-web
+  namespace: sentry
+  labels:
+    app: sentry-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sentry-web
+  template:
+    metadata:
+      namespace: sentry
+      labels:
+        app: sentry-web
+    spec:
+      containers:
+      - name: sentry-web
+        image: docker.mia.ulti.io/globalsecurity/sentry:latest
+        imagePullPolicy: Always
+        args: ['run', 'web']
+        env:
+        - name: SENTRY_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: secretKey
+        - name: SENTRY_DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: dbName
+        - name: SENTRY_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: dbUser
+        - name: SENTRY_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: dbPassword
+        - name: SENTRY_POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: dbHost
+        - name: SENTRY_POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: dbPort
+        - name: SENTRY_EMAIL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: emailHost
+        - name: SENTRY_EMAIL_USE_TLS
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: emailUseTLS
+        - name: SENTRY_SERVER_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: emailSender
+        - name: SENTRY_REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: redisHost
+        - name: SENTRY_REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: redisPort
+        - name: SENTRY_MEMCACHED_HOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: memcachedHost
+        - name: SENTRY_MEMCACHED_PORT
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: memcachedPort
+        - name: SENTRY_RABBITMQ_HOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: rabbitmqHost
+        - name: SENTRY_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: rabbitmqUsername
+        - name: SENTRY_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: rabbitmqPassword
+        - name: SENTRY_RABBITMQ_VHOST
+          valueFrom:
+            secretKeyRef:
+              name: sentrysecrets
+              key: rabbitmqVhost
+        - name: SENTRY_USE_SSL
+          value: "1"
+        - name: SENTRY_WEB_PORT
+          value: "8000"
+        - name: SENTRY_WEB_WORKERS
+          value: "3"
+        ports:
+          - containerPort: 8000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: sentry-web-service
+  namespace: sentry
+spec:
+  selector:
+    app: sentry-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
